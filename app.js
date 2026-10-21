@@ -438,12 +438,6 @@ function executeSell() {
   showToast(`Sprzedano ${btcVal.toFixed(6)} BTC za ${formatPLN(netPln)} (prowizja: ${formatPLN(feePln)})`, 'success');
 }
 
-function addCash(amount) {
-  state.pln += amount;
-  saveState();
-  updateUI();
-  showToast(`Dodano ${formatPLN(amount)} do portfela!`, 'success');
-}
 
 // --- UI Updates & Calculations ---
 
