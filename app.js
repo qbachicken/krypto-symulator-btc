@@ -286,17 +286,23 @@ function changeTimeframe(days) {
 // --- Trading Logic with 0.2% Commission ---
 
 function setBuyPercentage(pct) {
-  const amount = state.pln * pct;
+  let amount = state.pln * pct;
+  if (pct === 1.0) {
+    amount = state.pln;
+  }
   if (buyAmountPlnEl) {
-    buyAmountPlnEl.value = amount.toFixed(2);
+    buyAmountPlnEl.value = amount > 0 ? amount.toFixed(2) : '';
     updateBuyEstimate();
   }
 }
 
 function setSellPercentage(pct) {
-  const amount = state.btc * pct;
+  let amount = state.btc * pct;
+  if (pct === 1.0) {
+    amount = state.btc;
+  }
   if (sellAmountBtcEl) {
-    sellAmountBtcEl.value = amount.toFixed(8);
+    sellAmountBtcEl.value = amount > 0 ? amount.toFixed(8) : '';
     updateSellEstimate();
   }
 }
@@ -328,10 +334,13 @@ function updateSellEstimate() {
 }
 
 function executeBuy() {
-  const plnVal = parseFloat(buyAmountPlnEl.value);
+  let plnVal = parseFloat(buyAmountPlnEl.value);
   if (!plnVal || plnVal <= 0) {
     showToast('Wprowadź poprawną kwotę PLN do zakupu', 'error');
     return;
+  }
+  if (plnVal > state.pln && plnVal <= state.pln + 0.01) {
+    plnVal = state.pln;
   }
   if (plnVal > state.pln) {
     showToast('Brak wystarczających środków PLN w portfelu!', 'error');
@@ -351,6 +360,11 @@ function executeBuy() {
   state.totalInvestedPln += plnVal;
   state.totalBtcBought += btcBougt;
 
+  // Handle tiny remaining dust if pln was effectively all-in
+  if (state.pln < 0.01) {
+    state.pln = 0;
+  }
+
   state.transactions.unshift({
     type: 'KUPNO',
     date: new Date().toLocaleString('pl-PL'),
@@ -369,10 +383,14 @@ function executeBuy() {
 }
 
 function executeSell() {
-  const btcVal = parseFloat(sellAmountBtcEl.value);
+  let btcVal = parseFloat(sellAmountBtcEl.value);
   if (!btcVal || btcVal <= 0) {
     showToast('Wprowadź poprawną ilość BTC do sprzedaży', 'error');
     return;
+  }
+  // Allow tiny floating point tolerance for dust/all-in
+  if (btcVal > state.btc && btcVal <= state.btc + 1e-7) {
+    btcVal = state.btc;
   }
   if (btcVal > state.btc) {
     showToast('Nie masz tylu BTC w portfelu!', 'error');
@@ -395,6 +413,13 @@ function executeSell() {
 
   state.btc -= btcVal;
   state.pln += netPln;
+
+  // If selling all or remaining dust
+  if (state.btc < 1e-8) {
+    state.btc = 0;
+    state.totalBtcBought = 0;
+    state.totalInvestedPln = 0;
+  }
 
   state.transactions.unshift({
     type: 'SPRZEDAŻ',
