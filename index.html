@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -33,9 +33,9 @@
   </script>
 
   <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js"></script>
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -52,16 +52,16 @@
           <h1 class="font-bold text-lg tracking-tight flex items-center gap-2">
             KryptoSymulator <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-medium">BTC/PLN</span>
           </h1>
-          <p class="text-xs text-slate-400 flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            Kurs na żywo (CoinGecko)
+          <p class="text-xs text-slate-400 flex items-center gap-1" aria-live="polite">
+            <span id="price-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span id="price-status">Ładowanie kursu...</span>
           </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
         <!-- Reset account button -->
-        <button id="reset-btn" title="Resetuj portfel do 100 zł" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-xs flex items-center gap-1 border border-slate-700">
+        <button id="reset-btn" title="Resetuj portfel do 100 zł" aria-label="Resetuj portfel do 100 zł" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-xs flex items-center gap-1 border border-slate-700">
           <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Reset</span>
         </button>
@@ -144,17 +144,20 @@
 
         <!-- Timeframe Buttons -->
         <div class="flex items-center bg-slate-900/80 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
-          <button onclick="changeTimeframe('1')" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all active">24H</button>
-          <button onclick="changeTimeframe('7')" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">7D</button>
-          <button onclick="changeTimeframe('30')" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">30D</button>
-          <button onclick="changeTimeframe('365')" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">1R</button>
-          <button onclick="changeTimeframe('max')" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">MAX</button>
+          <button data-days="1" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all active">24H</button>
+          <button data-days="7" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">7D</button>
+          <button data-days="30" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">30D</button>
+          <button data-days="365" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">1R</button>
+          <button data-days="max" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">MAX</button>
         </div>
       </div>
 
       <!-- Canvas Chart Container -->
       <div class="relative w-full h-[280px] sm:h-[350px]">
         <canvas id="btcChart"></canvas>
+        <div id="chart-error" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-400 text-center px-6">
+          Nie udało się pobrać wykresu z CoinGecko. Spróbuj ponownie za chwilę.
+        </div>
       </div>
     </div>
 
@@ -173,7 +176,7 @@
 
         <div class="space-y-4">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Kwota w PLN do przeznaczenia:</label>
+            <label for="buy-amount-pln" class="block text-xs text-slate-400 mb-1">Kwota w PLN do przeznaczenia:</label>
             <div class="relative">
               <input type="number" id="buy-amount-pln" min="1" step="any" placeholder="np. 100" class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-semibold">
               <div class="absolute right-3 top-3 text-xs text-slate-400 font-medium">PLN</div>
@@ -185,7 +188,7 @@
             <button onclick="setBuyPercentage(0.25)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">25%</button>
             <button onclick="setBuyPercentage(0.50)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">50%</button>
             <button onclick="setBuyPercentage(0.75)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">75%</button>
-            <button onclick="setBuyPercentage(1.00)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">MAX (100 zł)</button>
+            <button onclick="setBuyPercentage(1.00)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">MAX</button>
           </div>
 
           <div class="text-xs text-slate-400 flex justify-between pt-1">
@@ -212,7 +215,7 @@
 
         <div class="space-y-4">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Ilość BTC do sprzedaży:</label>
+            <label for="sell-amount-btc" class="block text-xs text-slate-400 mb-1">Ilość BTC do sprzedaży:</label>
             <div class="relative">
               <input type="number" id="sell-amount-btc" min="0.00000001" step="any" placeholder="np. 0.001" class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 font-semibold">
               <div class="absolute right-3 top-3 text-xs text-slate-400 font-medium">BTC</div>
