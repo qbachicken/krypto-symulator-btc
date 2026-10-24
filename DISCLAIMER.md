@@ -30,7 +30,7 @@ W zakresie dopuszczonym przez obowiązujące prawo autor nie gwarantuje określo
 
 Przed podjęciem rzeczywistych działań finansowych zweryfikuj kursy, opłaty, zasady giełdy, bezpieczeństwo i konsekwencje podatkowe w odpowiednich, wiarygodnych źródłach. Nie traktuj wirtualnego salda jako prawdziwego majątku ani historii transakcji jako potwierdzenia transakcji na rynku.
 
-Ten dokument to ogólne zastrzeżenie do projektu open source, a nie porada prawna. Jeżeli aplikacja ma być używana komercyjnie, reklamowana jako produkt finansowy lub oferowana szerokiej publiczności w zmienionej formie, uzyskaj indywidualną ocenę prawną.
+Ten dokument to ogólne zastrzeżenie do projektu publicznie dostępnego w repozytorium, a nie porada prawna. Jeżeli aplikacja ma być używana komercyjnie, reklamowana jako produkt finansowy lub oferowana szerokiej publiczności w zmienionej formie, uzyskaj indywidualną ocenę prawną.
 
 ## English summary
 
@@ -38,7 +38,7 @@ This application is an educational simulation only. It does not execute real cry
 
 ## Źródła prawne i informacyjne
 
-- [Kodeks cywilny — oficjalny tekst w ELI](https://eli.gov.pl/eli/DU/1964/93) — zapisy umowne nie mogą uchylać odpowiedzialności w zakresie zabronionym przez prawo.
+- [Kodeks cywilny — tekst jednolity z 2026 r. w ELI](https://eli.gov.pl/eli/DU/2026/795/ogl) — zapisy umowne nie mogą uchylać odpowiedzialności w zakresie zabronionym przez prawo.
 - [UOKiK — niedozwolone klauzule](https://www.uokik.gov.pl/public/niedozwolone-klauzule) — wyjaśnienie, że niektóre postanowienia wzorców umownych wyłączające odpowiedzialność mogą nie wiązać konsumentów.
 - [CoinGecko — informacje o warunkach licencji i atrybucji API](https://support.coingecko.com/articles/1043089972-what-are-the-differences-between-commercial-and-custom-licenses).
 
