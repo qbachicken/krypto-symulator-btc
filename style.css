@@ -43,6 +43,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
   background:
     radial-gradient(900px 420px at 50% -180px, rgba(242, 163, 60, 0.09), transparent 70%),
     var(--canvas);
@@ -812,8 +813,30 @@ tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
 }
 
 @media (max-width: 640px) {
-  .chart-head-right { width: 100%; justify-content: space-between; }
-  .chart-current-price-wrap { align-items: flex-start; }
+  .panel-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .chart-head-right {
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .timeframe-btn {
+    padding: 4px 8px;
+    font-size: 11.5px;
+  }
+}
+
+/* Hide scrollbars on table-wrap on mobile while allowing touch scroll */
+.table-wrap {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.table-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 /* ----------------------------------------------------------------
