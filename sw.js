@@ -1,7 +1,7 @@
 // Podbij CACHE_VERSION przy każdej zmianie plików aplikacji.
 // Zmiana tego pliku powoduje, że przeglądarka instaluje nowego service workera,
 // który usuwa stare cache i przeładowuje otwarte karty.
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_PREFIX = 'kryptosymulator-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 

@@ -231,8 +231,7 @@ input {
 
 @media (max-width: 620px) {
   .brand-sub, .btn-text { display: none; }
-  .ticker { padding: 5px 10px; gap: 7px; }
-  .ticker-pair { display: none; }
+  .ticker { display: none !important; }
 }
 
 /* ----------------------------------------------------------------
@@ -823,9 +822,19 @@ tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
     justify-content: space-between;
     align-items: center;
   }
+  .segmented {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
   .timeframe-btn {
     padding: 4px 8px;
     font-size: 11.5px;
+    flex-shrink: 0;
   }
 }
 
