@@ -1,36 +1,19 @@
 <!DOCTYPE html>
-<html lang="pl" class="dark">
+<html lang="pl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KryptoSymulator — Symulator Inwestycji BTC</title>
+  <meta name="description" content="Symulator inwestycji w Bitcoina z prawdziwym kursem BTC/PLN, prowizją 0,1% i portfelem startowym 100 zł.">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#090d16">
+  <meta name="theme-color" content="#08090b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" href="data:,">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            crypto: {
-              bg: '#090d16',
-              card: '#111827',
-              border: '#1e293b',
-              gold: '#f59e0b',
-              green: '#10b981',
-              red: '#ef4444'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js"></script>
@@ -39,258 +22,231 @@
 
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+<body>
 
-  <!-- Header -->
-  <header class="glass-card sticky top-0 z-50 border-b border-slate-800 px-4 py-3">
-    <div class="max-w-5xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-lg shadow-amber-500/10">
-          <i data-lucide="bitcoin" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <h1 class="font-bold text-lg tracking-tight flex items-center gap-2">
-            KryptoSymulator <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-medium">BTC/PLN</span>
-          </h1>
-          <p class="text-xs text-slate-400 flex items-center gap-1" aria-live="polite">
-            <span id="price-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span id="price-status">Ładowanie kursu...</span>
-          </p>
-        </div>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./" aria-label="KryptoSymulator — odśwież stronę">
+        <span class="brand-mark" aria-hidden="true"><i data-lucide="bitcoin"></i></span>
+        <span class="brand-text">
+          <h1 class="brand-name">KryptoSymulator</h1>
+          <span class="brand-sub">symulator inwestycji</span>
+        </span>
+      </a>
+
+      <div class="ticker" aria-label="Kurs Bitcoina">
+        <span class="ticker-pair">BTC/PLN</span>
+        <span id="current-btc-price" class="ticker-price">—</span>
+        <span id="price-change-24h" class="ticker-change is-flat">--</span>
       </div>
 
-      <div class="flex items-center gap-2">
-        <!-- Reset account button -->
-        <button id="reset-btn" title="Resetuj portfel do 100 zł" aria-label="Resetuj portfel do 100 zł" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-xs flex items-center gap-1 border border-slate-700">
-          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Reset</span>
+      <div class="topbar-actions">
+        <button id="reset-btn" type="button" class="btn" title="Resetuj portfel do 100 zł" aria-label="Resetuj portfel do 100 zł">
+          <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+          <span class="btn-text">Reset</span>
         </button>
-        <!-- Install PWA Button -->
-        <button id="install-btn" class="hidden px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold transition-all text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20">
-          <i data-lucide="download" class="w-4 h-4"></i>
+        <button id="install-btn" type="button" class="btn btn-install hidden">
+          <i data-lucide="download" aria-hidden="true"></i>
           <span>Zainstaluj</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-grow space-y-6">
-
-    <!-- Top Grid: Portfolio Summary & Live Price Card -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-      <!-- Portfolio Value Card -->
-      <div class="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
-        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none"></div>
-        <div>
-          <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">
-            <span>Całkowita wartość portfela</span>
-            <i data-lucide="wallet" class="w-4 h-4 text-amber-500"></i>
-          </div>
-          <div id="total-portfolio-pln" class="text-3xl font-bold tracking-tight text-white">100,00 zł</div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-sm">
-          <span class="text-slate-400">Wynik inwestycji:</span>
-          <span id="portfolio-pnl" class="font-semibold text-slate-300">0,00 zł (0.00%)</span>
-        </div>
-      </div>
-
-      <!-- PLN Balance Card -->
-      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">
-          <span>Dostępne PLN</span>
-          <i data-lucide="banknote" class="w-4 h-4 text-emerald-500"></i>
-        </div>
-        <div>
-          <div id="wallet-pln" class="text-2xl font-bold tracking-tight text-white">100,00 zł</div>
-          <p class="text-xs text-slate-400 mt-1">Startowe środki na inwestycje</p>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-500">
-          <span>Brak możliwości dopłaty (hardcore mode)</span>
-        </div>
-      </div>
-
-      <!-- BTC Balance Card -->
-      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">
-          <span>Posiadane BTC</span>
-          <i data-lucide="coins" class="w-4 h-4 text-amber-500"></i>
-        </div>
-        <div>
-          <div id="wallet-btc" class="text-2xl font-bold tracking-tight text-amber-400">0.00000000 BTC</div>
-          <div id="wallet-btc-pln" class="text-xs text-slate-400 mt-1">≈ 0,00 zł</div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-          <span>Śr. cena zakupu:</span>
-          <span id="avg-buy-price" class="font-semibold text-slate-200">-</span>
-        </div>
-      </div>
-
+  <!-- Market status -->
+  <div class="statusbar">
+    <div class="wrap statusbar-inner">
+      <p class="status" aria-live="polite">
+        <span id="price-dot" class="dot dot-none" aria-hidden="true"></span>
+        <span id="price-status">Ładowanie kursu…</span>
+      </p>
+      <p class="status-meta">prowizja 0,1% · start 100 zł</p>
     </div>
+  </div>
 
-    <!-- Live Ticker & Chart Section -->
-    <div class="glass-card rounded-2xl p-5 space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div>
-            <div class="text-xs text-slate-400">Aktualna cena Bitcoin</div>
-            <div class="flex items-baseline gap-2">
-              <span id="current-btc-price" class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Ładowanie...</span>
-              <span id="price-change-24h" class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">--</span>
-            </div>
-          </div>
-        </div>
+  <main class="wrap main">
 
-        <!-- Timeframe Buttons -->
-        <div class="flex items-center bg-slate-900/80 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
-          <button data-days="1" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all active">24H</button>
-          <button data-days="7" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">7D</button>
-          <button data-days="30" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">30D</button>
-          <button data-days="365" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">1R</button>
-          <button data-days="max" class="timeframe-btn px-3 py-1 text-xs rounded-lg font-medium text-slate-400 hover:text-white transition-all">MAX</button>
+    <!-- Portfolio -->
+    <section class="account reveal" style="--i:0" aria-label="Podsumowanie portfela">
+      <div class="account-cell account-main">
+        <span class="label">Wartość portfela</span>
+        <div id="total-portfolio-pln" class="value value-lg">100,00 zł</div>
+        <div class="sub">
+          <span class="sub-label">Wynik inwestycji</span>
+          <span id="portfolio-pnl" class="pnl">0,00 zł (0.00%)</span>
         </div>
       </div>
 
-      <!-- Canvas Chart Container -->
-      <div class="relative w-full h-[280px] sm:h-[350px]">
-        <canvas id="btcChart"></canvas>
-        <div id="chart-error" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-400 text-center px-6">
+      <div class="account-cell">
+        <span class="label">Dostępne PLN</span>
+        <div id="wallet-pln" class="value">100,00 zł</div>
+        <p class="note">Bez doładowań — hardcore mode</p>
+      </div>
+
+      <div class="account-cell">
+        <span class="label">Posiadane BTC</span>
+        <div id="wallet-btc" class="value value-btc">0.00000000 BTC</div>
+        <p id="wallet-btc-pln" class="note">≈ 0,00 zł</p>
+      </div>
+
+      <div class="account-cell">
+        <span class="label">Średnia cena zakupu</span>
+        <div id="avg-buy-price" class="value">—</div>
+        <p class="note">koszt zakupów ÷ ilość BTC</p>
+      </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="panel chart-panel reveal" style="--i:1" aria-labelledby="chart-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="chart-title" class="panel-title">Bitcoin</h2>
+          <p class="panel-sub">Kurs CoinGecko · odświeżanie co 60 s</p>
+        </div>
+        <div class="chart-head-right">
+          <div class="chart-current-price-wrap">
+            <span class="chart-current-label">Aktualna cena</span>
+            <span id="chart-current-price" class="chart-current-value">—</span>
+          </div>
+          <div class="segmented" role="group" aria-label="Zakres wykresu">
+            <button type="button" data-days="1" class="timeframe-btn active">24H</button>
+            <button type="button" data-days="7" class="timeframe-btn">7D</button>
+            <button type="button" data-days="30" class="timeframe-btn">30D</button>
+            <button type="button" data-days="365" class="timeframe-btn">1R</button>
+            <button type="button" data-days="max" class="timeframe-btn">MAX</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <canvas id="btcChart" aria-label="Wykres ceny Bitcoina" role="img"></canvas>
+        <div id="chart-error" class="chart-error hidden">
           Nie udało się pobrać wykresu z CoinGecko. Spróbuj ponownie za chwilę.
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Trading Panel: Buy / Sell -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Order tickets -->
+    <div class="order-grid">
 
-      <!-- Buy BTC Box -->
-      <div class="glass-card rounded-2xl p-5 border-emerald-500/20 bg-gradient-to-br from-emerald-950/10 via-slate-900/60 to-slate-900/80">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-base flex items-center gap-2 text-emerald-400">
-            <i data-lucide="trending-up" class="w-5 h-5"></i>
-            Kup Bitcoin (BTC)
+      <section class="panel ticket ticket-buy reveal" style="--i:2" aria-labelledby="buy-title">
+        <div class="ticket-head">
+          <h2 id="buy-title" class="ticket-title">
+            <i data-lucide="arrow-down-left" aria-hidden="true"></i>
+            Kup BTC
           </h2>
-          <span class="text-xs text-slate-400">Prowizja: 0.2%</span>
+          <span class="ticket-meta">prowizja 0,1%</span>
         </div>
 
-        <div class="space-y-4">
-          <div>
-            <label for="buy-amount-pln" class="block text-xs text-slate-400 mb-1">Kwota w PLN do przeznaczenia:</label>
-            <div class="relative">
-              <input type="number" id="buy-amount-pln" min="1" step="any" placeholder="np. 100" class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-semibold">
-              <div class="absolute right-3 top-3 text-xs text-slate-400 font-medium">PLN</div>
-            </div>
-          </div>
-
-          <!-- Quick percentage buttons -->
-          <div class="flex gap-2">
-            <button onclick="setBuyPercentage(0.25)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">25%</button>
-            <button onclick="setBuyPercentage(0.50)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">50%</button>
-            <button onclick="setBuyPercentage(0.75)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">75%</button>
-            <button onclick="setBuyPercentage(1.00)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">MAX</button>
-          </div>
-
-          <div class="text-xs text-slate-400 flex justify-between pt-1">
-            <span>Otrzymasz szacunkowo:</span>
-            <span id="buy-estimate-btc" class="font-semibold text-emerald-400">0.00000000 BTC</span>
-          </div>
-
-          <button onclick="executeBuy()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
-            <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
-            Kup BTC za PLN
-          </button>
+        <label class="field-label" for="buy-amount-pln">Kwota w PLN</label>
+        <div class="field">
+          <input type="number" id="buy-amount-pln" min="1" step="any" placeholder="0,00" inputmode="decimal" autocomplete="off" class="" >
+          <span class="field-unit">PLN</span>
         </div>
-      </div>
 
-      <!-- Sell BTC Box -->
-      <div class="glass-card rounded-2xl p-5 border-rose-500/20 bg-gradient-to-br from-rose-950/10 via-slate-900/60 to-slate-900/80">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-base flex items-center gap-2 text-rose-400">
-            <i data-lucide="trending-down" class="w-5 h-5"></i>
-            Sprzedaj Bitcoin (BTC)
+        <div class="chips">
+          <button type="button" class="chip" onclick="setBuyPercentage(0.25)">25%</button>
+          <button type="button" class="chip" onclick="setBuyPercentage(0.50)">50%</button>
+          <button type="button" class="chip" onclick="setBuyPercentage(0.75)">75%</button>
+          <button type="button" class="chip" onclick="setBuyPercentage(1.00)">MAX</button>
+        </div>
+
+        <div class="estimate">
+          <span>Otrzymasz</span>
+          <span class="estimate-right">
+            <span id="buy-estimate-btc" class="estimate-value">0.00000000 BTC</span>
+            <span id="buy-estimate-fee" class="fee">prowizja 0,00 zł</span>
+          </span>
+        </div>
+
+        <button type="button" class="btn-action btn-buy" onclick="executeBuy()">
+          <i data-lucide="arrow-down-left" aria-hidden="true"></i>
+          Kup BTC za PLN
+        </button>
+      </section>
+
+      <section class="panel ticket ticket-sell reveal" style="--i:3" aria-labelledby="sell-title">
+        <div class="ticket-head">
+          <h2 id="sell-title" class="ticket-title">
+            <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+            Sprzedaj BTC
           </h2>
-          <span class="text-xs text-slate-400">Prowizja: 0.2%</span>
+          <span class="ticket-meta">prowizja 0,1%</span>
         </div>
 
-        <div class="space-y-4">
-          <div>
-            <label for="sell-amount-btc" class="block text-xs text-slate-400 mb-1">Ilość BTC do sprzedaży:</label>
-            <div class="relative">
-              <input type="number" id="sell-amount-btc" min="0.00000001" step="any" placeholder="np. 0.001" class="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-rose-500 font-semibold">
-              <div class="absolute right-3 top-3 text-xs text-slate-400 font-medium">BTC</div>
-            </div>
-          </div>
-
-          <!-- Quick percentage buttons -->
-          <div class="flex gap-2">
-            <button onclick="setSellPercentage(0.25)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">25%</button>
-            <button onclick="setSellPercentage(0.50)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">50%</button>
-            <button onclick="setSellPercentage(0.75)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">75%</button>
-            <button onclick="setSellPercentage(1.00)" class="flex-1 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs rounded-lg text-slate-300 border border-slate-700">MAX</button>
-          </div>
-
-          <div class="text-xs text-slate-400 flex justify-between pt-1">
-            <span>Otrzymasz szacunkowo:</span>
-            <span id="sell-estimate-pln" class="font-semibold text-rose-400">0,00 PLN</span>
-          </div>
-
-          <button onclick="executeSell()" class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl shadow-lg shadow-rose-600/20 transition-all flex items-center justify-center gap-2">
-            <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
-            Sprzedaj BTC za PLN
-          </button>
+        <label class="field-label" for="sell-amount-btc">Ilość BTC</label>
+        <div class="field">
+          <input type="number" id="sell-amount-btc" min="0.00000001" step="any" placeholder="0.00000000" inputmode="decimal" autocomplete="off">
+          <span class="field-unit">BTC</span>
         </div>
-      </div>
+
+        <div class="chips">
+          <button type="button" class="chip" onclick="setSellPercentage(0.25)">25%</button>
+          <button type="button" class="chip" onclick="setSellPercentage(0.50)">50%</button>
+          <button type="button" class="chip" onclick="setSellPercentage(0.75)">75%</button>
+          <button type="button" class="chip" onclick="setSellPercentage(1.00)">MAX</button>
+        </div>
+
+        <div class="estimate">
+          <span>Otrzymasz</span>
+          <span class="estimate-right">
+            <span id="sell-estimate-pln" class="estimate-value">0,00 zł</span>
+            <span id="sell-estimate-fee" class="fee">prowizja 0,00 zł</span>
+          </span>
+        </div>
+
+        <button type="button" class="btn-action btn-sell" onclick="executeSell()">
+          <i data-lucide="arrow-up-right" aria-hidden="true"></i>
+          Sprzedaj BTC za PLN
+        </button>
+      </section>
 
     </div>
 
-    <!-- Transaction History Section -->
-    <div class="glass-card rounded-2xl p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="font-bold text-base flex items-center gap-2 text-slate-200">
-          <i data-lucide="history" class="w-5 h-5 text-amber-500"></i>
-          Historia transakcji
-        </h2>
-        <span id="tx-count" class="text-xs text-slate-400 px-2 py-0.5 rounded-full bg-slate-800">0 transakcji</span>
+    <!-- Ledger -->
+    <section class="panel ledger reveal" style="--i:4" aria-labelledby="ledger-title">
+      <div class="panel-head">
+        <h2 id="ledger-title" class="panel-title">Historia transakcji</h2>
+        <span id="tx-count" class="count">0 transakcji</span>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
+      <div class="table-wrap">
+        <table>
           <thead>
-            <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
-              <th class="py-3 px-4 font-medium">Typ</th>
-              <th class="py-3 px-4 font-medium">Data</th>
-              <th class="py-3 px-4 font-medium">Cena BTC (PLN)</th>
-              <th class="py-3 px-4 font-medium">Ilość BTC</th>
-              <th class="py-3 px-4 font-medium text-right">Wartość PLN</th>
+            <tr>
+              <th scope="col">Typ</th>
+              <th scope="col">Data</th>
+              <th scope="col" class="num">Cena BTC</th>
+              <th scope="col" class="num">Ilość BTC</th>
+              <th scope="col" class="num">Wartość PLN</th>
             </tr>
           </thead>
-          <tbody id="transactions-tbody" class="divide-y divide-slate-800/60 text-slate-300">
-            <tr>
-              <td colspan="5" class="py-8 text-center text-slate-500 italic">Brak transakcji. Czas na pierwsze zakupy!</td>
+          <tbody id="transactions-tbody">
+            <tr class="empty-row">
+              <td colspan="5">
+                <span class="empty-title">Brak transakcji</span>
+                <span class="empty-sub">Zacznij od zakupu BTC — portfel startowy to 100 zł.</span>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500 mt-12 bg-slate-950/40">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p>KryptoSymulator BTC — Symulacja inwestycji opartą o prawdziwe kursy rynkowe.</p>
-      <p class="text-slate-400">Zaprojektowane z myślą o inwestorach.</p>
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p>KryptoSymulator — symulacja inwestycji na prawdziwych kursach. Środki wirtualne.</p>
+      <p>Dane: CoinGecko · prowizja 0,1%</p>
     </div>
   </footer>
 
-  <!-- Toast Notification Container -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <!-- JavaScript App Logic -->
   <script src="app.js"></script>
   <script>
-    // Initialize Lucide icons
     lucide.createIcons();
   </script>
 </body>

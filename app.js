@@ -1,5 +1,5 @@
 // --- Constants ---
-const COMMISSION_RATE = 0.002; // 0.2% prowizji giełdowej
+const COMMISSION_RATE = 0.001; // 0.1% prowizji giełdowej
 const START_BALANCE = 100;     // startowe środki w PLN
 const STATE_KEY = 'kryptosymulator_state';
 const PRICE_KEY = 'kryptosymulator_last_price';
@@ -78,14 +78,17 @@ const walletBtcEl = document.getElementById('wallet-btc');
 const walletBtcPlnEl = document.getElementById('wallet-btc-pln');
 const avgBuyPriceEl = document.getElementById('avg-buy-price');
 const currentBtcPriceEl = document.getElementById('current-btc-price');
+const chartCurrentPriceEl = document.getElementById('chart-current-price');
 const priceChange24hEl = document.getElementById('price-change-24h');
 const priceStatusEl = document.getElementById('price-status');
 const priceDotEl = document.getElementById('price-dot');
 const chartErrorEl = document.getElementById('chart-error');
 const buyAmountPlnEl = document.getElementById('buy-amount-pln');
 const buyEstimateBtcEl = document.getElementById('buy-estimate-btc');
+const buyEstimateFeeEl = document.getElementById('buy-estimate-fee');
 const sellAmountBtcEl = document.getElementById('sell-amount-btc');
 const sellEstimatePlnEl = document.getElementById('sell-estimate-pln');
+const sellEstimateFeeEl = document.getElementById('sell-estimate-fee');
 const transactionsTbody = document.getElementById('transactions-tbody');
 const txCountEl = document.getElementById('tx-count');
 const resetBtn = document.getElementById('reset-btn');
@@ -235,14 +238,17 @@ function updatePriceDisplay() {
   if (currentBtcPriceEl) {
     currentBtcPriceEl.textContent = currentBtcPrice > 0 ? formatPLN(currentBtcPrice) : 'Brak kursu';
   }
+  if (chartCurrentPriceEl) {
+    chartCurrentPriceEl.textContent = currentBtcPrice > 0 ? formatPLN(currentBtcPrice) : '—';
+  }
   if (priceChange24hEl) {
     if (currentBtcPrice > 0) {
       const isPositive = priceChange24h >= 0;
       priceChange24hEl.textContent = `${isPositive ? '+' : ''}${priceChange24h.toFixed(2)}%`;
-      priceChange24hEl.className = `text-xs font-semibold px-2 py-0.5 rounded-md ${isPositive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`;
+      priceChange24hEl.className = `ticker-change ${isPositive ? 'is-up' : 'is-down'}`;
     } else {
       priceChange24hEl.textContent = '--';
-      priceChange24hEl.className = 'text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300';
+      priceChange24hEl.className = 'ticker-change is-flat';
     }
   }
   if (priceStatusEl) {
@@ -256,7 +262,7 @@ function updatePriceDisplay() {
     }
   }
   if (priceDotEl) {
-    priceDotEl.className = `w-2 h-2 rounded-full ${priceStatus === 'live' ? 'bg-emerald-500 animate-ping' : priceStatus === 'stale' ? 'bg-amber-500' : 'bg-rose-500'}`;
+    priceDotEl.className = `dot ${priceStatus === 'live' ? 'dot-live' : priceStatus === 'stale' ? 'dot-stale' : 'dot-none'}`;
   }
   updateBuyEstimate();
   updateSellEstimate();
@@ -273,23 +279,23 @@ async function initChart() {
       datasets: [{
         label: 'Cena BTC (PLN)',
         data: [],
-        borderColor: '#f59e0b',
+        borderColor: '#f2a33c',
         borderWidth: 2,
         backgroundColor: (context) => {
           const chart = context.chart;
           const {ctx, chartArea} = chart;
           if (!chartArea) return null;
           const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-          gradient.addColorStop(0, 'rgba(245, 158, 11, 0.0)');
-          gradient.addColorStop(1, 'rgba(245, 158, 11, 0.25)');
+          gradient.addColorStop(0, 'rgba(242, 163, 60, 0.0)');
+          gradient.addColorStop(1, 'rgba(242, 163, 60, 0.22)');
           return gradient;
         },
         fill: true,
         tension: 0.25,
         pointRadius: 0,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#f59e0b',
-        pointHoverBorderColor: '#fff',
+        pointHoverBackgroundColor: '#f2a33c',
+        pointHoverBorderColor: '#08090b',
         pointHoverBorderWidth: 2
       }]
     },
@@ -301,10 +307,10 @@ async function initChart() {
         tooltip: {
           mode: 'index',
           intersect: false,
-          backgroundColor: '#111827',
-          titleColor: '#f8fafc',
-          bodyColor: '#cbd5e1',
-          borderColor: '#334155',
+          backgroundColor: '#0d0f12',
+          titleColor: '#f1f3f5',
+          bodyColor: '#a7b0bd',
+          borderColor: '#2a3038',
           borderWidth: 1,
           padding: 12,
           callbacks: {
@@ -317,13 +323,13 @@ async function initChart() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 6 }
+          ticks: { color: '#7d8794', font: { size: 10, family: "'JetBrains Mono', monospace" }, maxTicksLimit: 6 }
         },
         y: {
-          grid: { color: 'rgba(30, 41, 59, 0.5)', drawBorder: false },
+          grid: { color: 'rgba(29, 33, 40, 0.85)', drawBorder: false },
           ticks: {
-            color: '#64748b',
-            font: { size: 10 },
+            color: '#7d8794',
+            font: { size: 10, family: "'JetBrains Mono', monospace" },
             callback: function(value) {
               return value >= 1000 ? (value / 1000).toFixed(0) + 'k zł' : value + ' zł';
             }
@@ -411,7 +417,7 @@ function changeTimeframe(days, btn) {
   loadChartData(days);
 }
 
-// --- Trading Logic with 0.2% Commission ---
+// --- Trading Logic with 0.1% Commission ---
 
 function calcBuy(plnVal) {
   const feePln = round2(plnVal * COMMISSION_RATE);
@@ -448,9 +454,11 @@ function updateBuyEstimate() {
   const plnVal = parseFloat(buyAmountPlnEl.value) || 0;
   if (currentBtcPrice > 0 && plnVal > 0) {
     const { feePln, btc } = calcBuy(plnVal);
-    buyEstimateBtcEl.textContent = `${btc.toFixed(8)} BTC (prowizja: ${formatPLN(feePln)})`;
+    buyEstimateBtcEl.textContent = `${btc.toFixed(8)} BTC`;
+    if (buyEstimateFeeEl) buyEstimateFeeEl.textContent = `prowizja ${formatPLN(feePln)}`;
   } else {
     buyEstimateBtcEl.textContent = '0.00000000 BTC';
+    if (buyEstimateFeeEl) buyEstimateFeeEl.textContent = 'prowizja 0,00 zł';
   }
 }
 
@@ -459,9 +467,11 @@ function updateSellEstimate() {
   const btcVal = parseFloat(sellAmountBtcEl.value) || 0;
   if (currentBtcPrice > 0 && btcVal > 0) {
     const { feePln, netPln } = calcSell(btcVal);
-    sellEstimatePlnEl.textContent = `${formatPLN(netPln)} (prowizja: ${formatPLN(feePln)})`;
+    sellEstimatePlnEl.textContent = formatPLN(netPln);
+    if (sellEstimateFeeEl) sellEstimateFeeEl.textContent = `prowizja ${formatPLN(feePln)}`;
   } else {
-    sellEstimatePlnEl.textContent = '0,00 PLN';
+    sellEstimatePlnEl.textContent = '0,00 zł';
+    if (sellEstimateFeeEl) sellEstimateFeeEl.textContent = 'prowizja 0,00 zł';
   }
 }
 
@@ -606,27 +616,27 @@ function updateUI() {
   if (portfolioPnlEl) {
     const isProfit = netProfit >= 0;
     portfolioPnlEl.textContent = `${isProfit ? '+' : ''}${formatPLN(netProfit)} (${isProfit ? '+' : ''}${netProfitPercent.toFixed(2)}%)`;
-    portfolioPnlEl.className = `font-semibold ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`;
+    portfolioPnlEl.className = `pnl ${isProfit ? 'is-up' : 'is-down'}`;
   }
 
   if (transactionsTbody && txCountEl) {
     txCountEl.textContent = `${state.transactions.length} transakcji`;
     if (state.transactions.length === 0) {
-      transactionsTbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-500 italic">Brak transakcji. Czas na pierwsze zakupy!</td></tr>`;
+      transactionsTbody.innerHTML = `<tr class="empty-row"><td colspan="5"><span class="empty-title">Brak transakcji</span><span class="empty-sub">Zacznij od zakupu BTC — portfel startowy to 100 zł.</span></td></tr>`;
     } else {
       transactionsTbody.innerHTML = state.transactions.map(tx => {
         const isBuy = tx.type === 'KUPNO';
         const dateText = tx.ts ? new Date(tx.ts).toLocaleString('pl-PL') : tx.date;
         return `
-        <tr class="hover:bg-slate-800/40 transition-colors">
-          <td class="py-3 px-4 font-semibold ${isBuy ? 'text-emerald-400' : 'text-rose-400'}">
-            ${isBuy ? 'KUPNO' : 'SPRZEDAŻ'}
-            <span class="block text-[10px] text-slate-500 font-normal">Prowizja: ${formatPLN(Number(tx.fee) || 0)}</span>
+        <tr>
+          <td>
+            <span class="tx-type ${isBuy ? 'tx-buy' : 'tx-sell'}">${isBuy ? 'KUPNO' : 'SPRZEDAŻ'}</span>
+            <span class="tx-fee">prowizja ${formatPLN(Number(tx.fee) || 0)}</span>
           </td>
-          <td class="py-3 px-4 text-xs text-slate-400">${escapeHtml(dateText)}</td>
-          <td class="py-3 px-4 font-mono">${formatPLN(Number(tx.price) || 0)}</td>
-          <td class="py-3 px-4 font-mono">${(Number(tx.btc) || 0).toFixed(6)} BTC</td>
-          <td class="py-3 px-4 text-right font-mono font-medium">${formatPLN(Number(tx.pln) || 0)}</td>
+          <td class="tx-date">${escapeHtml(dateText)}</td>
+          <td class="num">${formatPLN(Number(tx.price) || 0)}</td>
+          <td class="num">${(Number(tx.btc) || 0).toFixed(6)} BTC</td>
+          <td class="num">${formatPLN(Number(tx.pln) || 0)}</td>
         </tr>
       `;
       }).join('');
@@ -650,13 +660,9 @@ function showToast(message, type = 'info') {
   if (!container) return;
 
   const toast = document.createElement('div');
-  const bgColors = {
-    success: 'bg-emerald-600/90 border-emerald-500 text-white',
-    error: 'bg-rose-600/90 border-rose-500 text-white',
-    info: 'bg-slate-800/90 border-slate-700 text-white'
-  };
-
-  toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-sm font-medium flex items-center gap-3 transition-all transform translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
+  const variants = { success: 'toast-success', error: 'toast-error', info: 'toast-info' };
+  toast.className = `toast ${variants[type] || variants.info}`;
+  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
 
   const text = document.createElement('span');
   text.textContent = message;
@@ -664,11 +670,12 @@ function showToast(message, type = 'info') {
   container.appendChild(toast);
 
   requestAnimationFrame(() => {
-    toast.classList.remove('translate-y-2', 'opacity-0');
+    toast.classList.add('is-in');
   });
 
   setTimeout(() => {
-    toast.classList.add('translate-y-2', 'opacity-0');
-    setTimeout(() => toast.remove(), 300);
+    toast.classList.remove('is-in');
+    toast.classList.add('is-out');
+    setTimeout(() => toast.remove(), 260);
   }, 3500);
 }

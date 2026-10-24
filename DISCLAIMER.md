@@ -18,7 +18,7 @@ Kryptowaluty są zmienne i wiążą się z ryzykiem utraty kapitału. Wynik symu
 
 Kurs BTC/PLN i historia cen są pobierane z CoinGecko. Dane mogą być opóźnione, niekompletne, niedostępne lub zmienione przez dostawcę. Aplikacja zależy od połączenia sieciowego, przeglądarki, hostingu oraz usług zewnętrznych.
 
-Prowizja 0,2% jest założeniem zapisanym w kodzie symulatora. Nie jest deklaracją rzeczywistych opłat giełdowych. Symulator nie modeluje w pełni m.in. spreadu, płynności, poślizgu cenowego, częściowego wykonania zleceń, minimalnych wielkości zleceń, prowizji zależnych od rynku ani podatków. Zaokrąglenia w kodzie mogą powodować różnice w porównaniu z innymi kalkulatorami.
+Prowizja 0,1% jest założeniem zapisanym w kodzie symulatora. Nie jest deklaracją rzeczywistych opłat giełdowych. Symulator nie modeluje w pełni m.in. spreadu, płynności, poślizgu cenowego, częściowego wykonania zleceń, minimalnych wielkości zleceń, prowizji zależnych od rynku ani podatków. Zaokrąglenia w kodzie mogą powodować różnice w porównaniu z innymi kalkulatorami.
 
 ## 4. Brak gwarancji
 
@@ -34,7 +34,7 @@ Ten dokument to ogólne zastrzeżenie do projektu publicznie dostępnego w repoz
 
 ## English summary
 
-This application is an educational simulation only. It does not execute real cryptocurrency transactions, hold funds, provide investment services, or offer financial advice. Market data may be delayed or unavailable; the simulated 0.2% fee and hypothetical results do not represent real exchange conditions or predict future performance. The software is provided without a promise of uninterrupted or error-free operation, subject always to mandatory rights and liabilities that cannot lawfully be excluded.
+This application is an educational simulation only. It does not execute real cryptocurrency transactions, hold funds, provide investment services, or offer financial advice. Market data may be delayed or unavailable; the simulated 0.1% fee and hypothetical results do not represent real exchange conditions or predict future performance. The software is provided without a promise of uninterrupted or error-free operation, subject always to mandatory rights and liabilities that cannot lawfully be excluded.
 
 ## Źródła prawne i informacyjne
 

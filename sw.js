@@ -1,7 +1,7 @@
 // Podbij CACHE_VERSION przy każdej zmianie plików aplikacji.
 // Zmiana tego pliku powoduje, że przeglądarka instaluje nowego service workera,
 // który usuwa stare cache i przeładowuje otwarte karty.
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_PREFIX = 'kryptosymulator-';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
@@ -17,7 +17,6 @@ const APP_SHELL = [
 
 // Zewnętrzne biblioteki i czcionki: cache'owane w tle (stale-while-revalidate)
 const CDN_HOSTS = [
-  'cdn.tailwindcss.com',
   'cdn.jsdelivr.net',
   'unpkg.com',
   'fonts.googleapis.com',

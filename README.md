@@ -10,7 +10,7 @@ KryptoSymulator BTC to statyczna aplikacja przeglądarkowa pozwalająca przećwi
 
 Funkcje widoczne w kodzie:
 - wirtualne saldo początkowe 100 PLN;
-- symulowane kupno i sprzedaż BTC z założoną prowizją 0,2%;
+- symulowane kupno i sprzedaż BTC z założoną prowizją 0,1%;
 - szacowanie ilości BTC lub PLN przed wykonaniem symulowanej operacji;
 - wykres danych cenowych dla zakresów 24H, 7D, 30D, 1R i MAX;
 - historia symulowanych operacji oraz podsumowanie wartości portfela;
@@ -22,7 +22,7 @@ Wyniki są wyłącznie demonstracją obliczeń. Model nie uwzględnia wszystkich
 ## Jak to działa?
 
 - **Ceny:** aplikacja pobiera kurs BTC/PLN i zmianę 24-godzinną z publicznego API CoinGecko. Kurs jest odświeżany okresowo. Kod blokuje symulowane operacje, gdy kurs jest nieobecny lub starszy niż przyjęty limit pięciu minut. Dane wykresu są pobierane osobno.
-- **Symulowane transakcje:** saldo i historia są obliczane po stronie przeglądarki. Prowizja 0,2% to stałe założenie symulatora, a nie opłata pobierana przez giełdę.
+- **Symulowane transakcje:** saldo i historia są obliczane po stronie przeglądarki. Prowizja 0,1% to stałe założenie symulatora, a nie opłata pobierana przez giełdę.
 - **Dane lokalne:** stan portfela jest zapisywany w pamięci localStorage przeglądarki pod kluczem kryptosymulator_state. Ostatni odczyt kursu jest zapisywany oddzielnie pod kluczem kryptosymulator_last_price.
 - **Brak konta i backendu:** bieżący kod nie implementuje logowania, serwerowego portfela, połączenia z kontem giełdowym ani wykonywania prawdziwych transakcji.
 - **PWA i cache:** service worker może przechowywać pliki aplikacji oraz zasoby z wymienionych CDN-ów. Kurs CoinGecko jest pobierany z sieci, więc aktualne dane rynkowe wymagają działającego połączenia.
